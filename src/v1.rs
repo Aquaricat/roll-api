@@ -128,6 +128,60 @@ pub fn roll(command: String) -> Option<Json<RollsResponse>> {
                         flags.equation = flags.equation + &"ro==" + &flags.ro.to_string();
                     },
                 };
+            } else if let &Arg::Roll(RollArg::XF(ref comparitive)) = arg {
+                flags.rr = match &comparitive.value {
+                    &ArgValue::Number(n) => n as i16,
+                    _ => 0
+                };
+                match comparitive.op {
+                    ComparisonArg::GreaterThan => {
+                        flags.xf_op = Some(ComparisonArg::GreaterThan);
+                        flags.equation = flags.equation + &"xf>" + &flags.xf.to_string();
+                    },
+                    ComparisonArg::GreaterThanOrEqual => {
+                        flags.xf_op = Some(ComparisonArg::GreaterThanOrEqual);
+                        flags.equation = flags.equation + &"xf>=" + &flags.xf.to_string();
+                    },
+                    ComparisonArg::LessThan => {
+                        flags.xf_op = Some(ComparisonArg::LessThan);
+                        flags.equation = flags.equation + &"xf<" + &flags.xf.to_string();
+                    },
+                    ComparisonArg::LessThanOrEqual => {
+                        flags.xf_op = Some(ComparisonArg::LessThanOrEqual);
+                        flags.equation = flags.equation + &"xf<=" + &flags.xf.to_string();
+                    },
+                    ComparisonArg::EqualTo => {
+                        flags.xf_op = Some(ComparisonArg::EqualTo);
+                        flags.equation = flags.equation + &"xf==" + &flags.xf.to_string();
+                    },
+                };
+            } else if let &Arg::Roll(RollArg::XO(ref comparitive)) = arg {
+                flags.ro = match &comparitive.value {
+                    &ArgValue::Number(n) => n as i16,
+                    _ => 0
+                };
+                match comparitive.op {
+                    ComparisonArg::GreaterThan => {
+                        flags.xo_op = Some(ComparisonArg::GreaterThan);
+                        flags.equation = flags.equation + &"xo>" + &flags.xo.to_string();
+                    },
+                    ComparisonArg::GreaterThanOrEqual => {
+                        flags.xo_op = Some(ComparisonArg::GreaterThanOrEqual);
+                        flags.equation = flags.equation + &"xo>=" + &flags.xo.to_string();
+                    },
+                    ComparisonArg::LessThan => {
+                        flags.xo_op = Some(ComparisonArg::LessThan);
+                        flags.equation = flags.equation + &"xo<" + &flags.xo.to_string();
+                    },
+                    ComparisonArg::LessThanOrEqual => {
+                        flags.xo_op = Some(ComparisonArg::LessThanOrEqual);
+                        flags.equation = flags.equation + &"xo<=" + &flags.xo.to_string();
+                    },
+                    ComparisonArg::EqualTo => {
+                        flags.xo_op = Some(ComparisonArg::EqualTo);
+                        flags.equation = flags.equation + &"xo==" + &flags.xo.to_string();
+                    },
+                };
             } else if let &Arg::Roll(RollArg::ModifierPos(ArgValue::Number(mp))) = arg {
                 flags.modifiers.push(mp as i16);
                 flags.equation = flags.equation + &"+" + &mp.to_string();

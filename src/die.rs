@@ -61,6 +61,9 @@ pub struct Die {
     /// If the die is dropped in the final roll
     pub is_dropped: bool,
 
+    /// If the die has been exploded
+    pub is_exploded: bool,
+
     /// If the die is dropped in the final roll
     pub is_rerolled: bool,
 
@@ -90,6 +93,7 @@ impl Die {
             child: None,
             die,
             is_dropped: false,
+            is_exploded: false,
             is_rerolled: false,
             is_successful: false,
             max: get_die_max(&die),
@@ -103,6 +107,13 @@ impl Die {
     /// Drop the die from the final roll
     pub fn drop(&mut self) {
         self.is_dropped = true
+    }
+
+    /// Mark the die as exploded.
+    pub fn exploded (&mut self, die: &Die) {
+        self.is_exploded = true;
+        let id = &die.id;
+        self.child = Some(id.to_owned());
     }
 
     /// Mark the die as successful to the a comparison
@@ -181,6 +192,15 @@ fn it_can_set_die_max() {
     custom.set_max(-50);
     assert_eq!(custom.die, DieType::Other);
     assert_eq!(custom.max, -50);
+}
+
+#[test]
+fn it_can_set_die_exploded() {
+    let mut custom = Die::new(DieType::D20);
+    let mut child = Die::new(DieType::D20);
+    custom.exploded(child);
+    assert_eq!(custom.child, child.id);
+    assert_eq!(custom.is_exploded, true);
 }
 
 #[test]

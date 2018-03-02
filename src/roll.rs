@@ -46,6 +46,10 @@ impl RollFlags {
             rr_op: None,
             ro_op: None,
             sides: None,
+            xf: 0,
+            xf_op: None,
+            xo: 0,
+            xo_op: None,
         }
     }
 }
@@ -121,6 +125,21 @@ impl Roll {
             None => {} // do nothing
         };
 
+        /// If we have explode flags, execute it
+        match flags.xf_op {
+            Some(op) => {
+                roll.explode_forever(&op, flags.xf);
+            },
+            None => {}
+        }
+
+        match flags.xo_op {
+            Some(op) => {
+                roll.explode_once(&op, flags.xo);
+            },
+            None => {}
+        }
+
         // Keep or drop dice that fit certain criteria
         if flags.gt != 0 {
             roll.keep_greater_than(flags.gt);
@@ -150,6 +169,54 @@ impl Roll {
         }
 
         roll
+    }
+
+    /// Check comparison type.
+    pub fn compare_op(&self, op: &ComparisonArg, f: bool, v: i16, t: i16) -> bool {
+        let comparison = match op {
+            &ComparisonArg::GreaterThan => !f && v > t,
+            &ComparisonArg::GreaterThanOrEqual => !f && v >= t,
+            &ComparisonArg::LessThan => !f && v < t,
+            &ComparisonArg::LessThanOrEqual => !f && v <= t,
+            &ComparisonArg::EqualTo => !f && v == t,
+        }
+
+        comparison
+    }
+
+    /// Explode dice one time that are above or below a certain threshold
+    pub fn explode_once(&mut self, op: &ComparisonArg, threshold: i16) {
+        let mut new_dice = Vec::new();
+        for die in &mut self.dice {
+            let comparison = compare_op(&op, &die.is_exploded, &die.value, &threshold);
+
+            if comparison {
+                let mut d = Die::new(die.die);
+                d.roll();
+                &die.exploded(&d);
+                new_dice.push(d);
+            }
+        }
+
+        self.dice.append(&mut new_dice);
+    }
+
+    /// Explode dice forever that are above or below a certain threshold
+    pub fn explode_forever(&mut self, op: &ComparisonArg, threshold: i16) {
+        // Explode any dice that need to be exploded
+        self.explode_once(&op, threshold);
+
+        let mut has_more = false;
+        for die in self.dice.iter() {
+            let comparison = compare_op(&op, &die.is_exploded, &die.value, &threshold);
+
+            if comparison {
+                has_more = true
+            }
+        }
+        if has_more {
+            self.explode_forever(op, threshold);
+        }
     }
 
     /// Keep the dice greater than a number
